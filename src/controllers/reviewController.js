@@ -13,6 +13,10 @@ const createReview = async (req, res) => {
       return res.status(400).json({ message: 'Rating must be between 1 and 5' });
     }
 
+    if (comment && comment.length > 500) {
+      return res.status(400).json({ message: 'Comment must be 500 characters or less' });
+    }
+
     // Verify booking belongs to user and is completed
     const [bookings] = await db.query(
       'SELECT * FROM bookings WHERE id = ? AND user_id = ? AND car_id = ?',
@@ -28,7 +32,7 @@ const createReview = async (req, res) => {
     }
 
     // Check if review already exists for this booking
-    const [existingReviews] = await db.query('SELECT * FROM reviews WHERE booking_id = ?', [booking_id]);
+    const [existingReviews] = await db.query('SELECT id FROM reviews WHERE booking_id = ?', [booking_id]);
     if (existingReviews.length > 0) {
       return res.status(400).json({ message: 'You have already reviewed this booking' });
     }
@@ -41,7 +45,8 @@ const createReview = async (req, res) => {
 
     res.status(201).json({ message: 'Review submitted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Create review error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -60,7 +65,8 @@ const getReviewsByCar = async (req, res) => {
 
     res.json(reviews);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Get reviews error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

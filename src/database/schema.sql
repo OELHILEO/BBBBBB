@@ -1,6 +1,12 @@
 CREATE DATABASE IF NOT EXISTS jiancha_car_rental;
 USE jiancha_car_rental;
 
+-- Drop tables in reverse dependency order for clean re-runs
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS cars;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -19,12 +25,11 @@ CREATE TABLE IF NOT EXISTS cars (
   price_per_day DECIMAL(10,2) NOT NULL,
   location VARCHAR(100) NOT NULL,
   is_available BOOLEAN DEFAULT TRUE,
+  discount_percent INT DEFAULT 0,
+  is_promotion TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Add promotion columns if not exists
-ALTER TABLE cars ADD COLUMN discount_percent INT DEFAULT 0;
-ALTER TABLE cars ADD COLUMN is_promotion TINYINT(1) DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,11 +46,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (car_id) REFERENCES cars(id)
 );
-
--- Add dropoff columns if not exists (MySQL ignores errors or we can just try)
-ALTER TABLE bookings ADD COLUMN pickup_location VARCHAR(100);
-ALTER TABLE bookings ADD COLUMN dropoff_location VARCHAR(100);
-ALTER TABLE bookings ADD COLUMN dropoff_fee DECIMAL(10,2) DEFAULT 0.00;
 
 CREATE TABLE IF NOT EXISTS reviews (
   id INT AUTO_INCREMENT PRIMARY KEY,
